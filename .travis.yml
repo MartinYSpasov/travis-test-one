@@ -1,33 +1,39 @@
+jobs:
+include:
+  - stage: run-test-one
+    dist: trusty
+    sudo: false
+    language: java
+    jdk:
+    - oraclejdk8
+    git:
+     depth: 3
+    cache:
+      directories:
+      - "$HOME/.m2"
+before_install:
+- git clone https://github.com/CJSCommonPlatform/travis-settings.git target/travis-settings
+- ln -sfT ${PWD}/target/travis-settings/settings.xml ${HOME}/.m2/settings.xml
+install: "${PWD}/target/travis-settings/java/install.sh"
+script: "${PWD}/target/travis-settings/java/script-install.sh"
+after_success: "${PWD}/target/travis-settings/java/after_success.sh"
+- stage: trigger downstream
+  dist: trusty
+  sudo: false
+  language: java
+  jdk:
+   - oraclejdk8
+  git:
+    depth: 3
+  cache:
+    directories:
+     - "$HOME/.m2"
+  script: |
+     echo "TRAVIS_BRANCH=$TRAVIS_BRANCH TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST"
+     if [[ ($TRAVIS_BRANCH == master) && ($TRAVIS_PULL_REQUEST == false) ]] ; then
+       curl -LO --retry 3 https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
+       sh trigger-travis.sh 4839261 MartinYSpasov/travis-test-two $TRAVIS_ACCESS_TOKEN
+     fi
 stages:
   - run-test-one
   - run-test-two
-jobs:
-  include:
-    - stage: run-test-one
-        dist: trusty
-        sudo: false
-        language: java
-        git:
-          depth: 3
-        cache:
-          directories:
-          - "$HOME/.m2"
-        branches:
-          only:
-          - master
-        before_install:
-        - git clone https://github.com/CJSCommonPlatform/travis-settings.git target/travis-settings
-        - ln -sfT ${PWD}/target/travis-settings/settings.xml ${HOME}/.m2/settings.xml
-        install: "${PWD}/target/travis-settings/java/install.sh"
-        script: "${PWD}/target/travis-settings/java/script-install.sh"
-        after_success: "${PWD}/target/travis-settings/java/after_success.sh"
-    - stage: run-test-two
-      script:
-        jdk: oraclejdk8
-        script: |
-                echo "TRAVIS_BRANCH=$TRAVIS_BRANCH TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST"
-                    if [[ ($TRAVIS_BRANCH == master) &&
-                           ($TRAVIS_PULL_REQUEST == false) ]] ; then
-                       curl -LO --retry 3 https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
-                       sh trigger-travis.sh OTHERGITHUBID https://github.com/MartinYSpasov/travis-test-two.git $TRAVIS_ACCESS_TOKEN
-                     fi
