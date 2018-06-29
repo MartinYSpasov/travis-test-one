@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/travis-test-one.iml" filepath="$PROJECT_DIR$/travis-test-one.iml" />
+      <module fileurl="file://$PROJECT_DIR$/travis-test-one.iml" filepath="$PROJECT_DIR$/travis-test-one.iml" />
     </modules>
   </component>
 </project>
